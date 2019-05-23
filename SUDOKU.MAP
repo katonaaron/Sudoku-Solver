@@ -1,0 +1,12 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 00141H 00142H DATA               DATA
+ 00150H 0034FH 00200H STACK1             STACK
+ 00350H 0044FH 00100H CODE               CODE
+ 00450H 0047CH 0002DH IO_CODE            CODE
+ 00480H 004BCH 0003DH VAL_CODE           CODE
+ 004C0H 005EDH 0012EH SOL_CODE           CODE
+
+Program entry point at 0035:0000
+

@@ -1,0 +1,419 @@
+Turbo Assembler	 Version 3.0	    05/23/19 17:48:50	    Page 1
+sudoku.ASM
+
+
+
+      1				     COMMENT *SUDOKU SOLVER*
+      2
+      3				     EXTRN   READ:FAR
+      4				     EXTRN   SOLVE:FAR
+      5				     EXTRN   VALIDATE:FAR
+      6
+      7					     INCLUDE C:\TASM\sud_ct.mac
+1     8	      =0000		     ESUCC   EQU     0
+1     9	      =0001		     EFOPEN  EQU     1
+1    10	      =0002		     EFREAD  EQU     2
+1    11	      =0003		     EFORMAT EQU     3
+1    12
+1    13	      =0061		     MSIZE   EQU 97
+     14					     INCLUDE C:\TASM\sud_io.mac
+1    15				     FOPEN MACRO
+1    16					     MOV AH,3DH
+1    17					     MOV AL,0H
+1    18					     INT 21H
+1    19				     ENDM
+1    20
+1    21				     FREAD MACRO NR_BYTES
+1    22					     MOV AH,3FH
+1    23					     MOV CX,NR_BYTES
+1    24					     INT 21H
+1    25				     ENDM
+1    26
+1    27				     FCLOSE MACRO
+1    28					     MOV     AH,3EH
+1    29					     INT 21H
+1    30				     ENDM
+1    31
+1    32				     PSTRING MACRO MSG
+1    33					     PUSH DX
+1    34					     PUSH AX
+1    35
+1    36					     LEA     DX,MSG
+1    37					     MOV     AH,09H
+1    38					     INT 21H
+1    39
+1    40					     POP AX
+1    41					     POP DX
+1    42				     ENDM
+1    43
+1    44				     PCHAR MACRO CHAR
+1    45					     PUSH DX
+1    46					     PUSH AX
+1    47
+1    48					     MOV DL,CHAR
+1    49					     MOV AH,02H
+1    50					     INT 21H
+1    51
+1    52					     POP AX
+1    53					     POP DX
+1    54				     ENDM
+1    55
+1    56
+1    57
+Turbo Assembler	 Version 3.0	    05/23/19 17:48:50	    Page 2
+sudoku.ASM
+
+
+
+     58					     INCLUDE C:\TASM\sud_err.mac
+1    59
+1    60				     PERROR  MACRO CODE
+1    61					     LOCAL   SUCCESS,FOPEN,FREAD,FORMAT,FINALLY
+1    62
+1    63					     CMP CODE,ESUCC
+1    64					     JE	SUCCESS
+1    65
+1    66					     CMP CODE,EFOPEN
+1    67					     JE	     FOPEN
+1    68
+1    69					     CMP     CODE,EFREAD
+1    70					     JE	     FREAD
+1    71
+1    72					     CMP CODE,EFORMAT
+1    73					     JE	     FORMAT
+1    74
+1    75					     PSTRING ERR_UNEXP
+1    76					     JMP FINALLY
+1    77
+1    78					     SUCCESS:
+1    79						     PSTRING ERR_SUCC
+1    80						     JMP FINALLY
+1    81					     FOPEN:
+1    82						     PSTRING ERR_FOPEN
+1    83						     JMP FINALLY
+1    84					     FREAD:
+1    85						     PSTRING ERR_FREAD
+1    86						     JMP FINALLY
+1    87					     FORMAT:
+1    88						     PSTRING ERR_FORMAT
+1    89						     JMP     FINALLY
+1    90
+1    91					     FINALLY:
+1    92				     ENDM
+     93
+     94	0000			     DATA SEGMENT PARA PUBLIC 'DATA'
+     95	0000  0C			     T		     DB	     12
+     96	0001  61*(5F) 24		     MAP     DB	     MSIZE DUP('_'),'$'
+     97	0063  00000001sr		     PMAP    DD	     MAP
+     98	0067  43 3A 5C 54 41 53	4D+	     PATH    DB	     'C:\TASM\sudoku\sudoku.txt',0
+     99	      5C 73 75 64 6F 6B	75+
+    100	      5C 73 75 64 6F 6B	75+
+    101	      2E 74 78 74 00
+    102
+    103					     ;Error messages
+    104	0081  45 72 72 6F 72 3A	20+	     ERR_SUCC		     DB	     'Error: No	error$'
+    105	      4E 6F 20 65 72 72	6F+
+    106	      72 24
+    107	0091  45 72 72 6F 72 3A	20+	     ERR_UNEXP		     DB	     'Error: Unexpected	error$'
+    108	      55 6E 65 78 70 65	63+
+    109	      74 65 64 20 65 72	72+
+    110	      6F 72 24
+    111	00A9  45 72 72 6F 72 3A	20+	     ERR_FOPEN		     DB	     'Error: The file could not	be opened$'
+    112	      54 68 65 20 66 69	6C+
+    113	      65 20 63 6F 75 6C	64+
+    114	      20 6E 6F 74 20 62	65+
+Turbo Assembler	 Version 3.0	    05/23/19 17:48:50	    Page 3
+sudoku.ASM
+
+
+
+    115	      20 6F 70 65 6E 65	64+
+    116	      24
+    117	00CD  45 72 72 6F 72 3A	20+	     ERR_FREAD		     DB	     'Error: The file could not	be read$'
+    118	      54 68 65 20 66 69	6C+
+    119	      65 20 63 6F 75 6C	64+
+    120	      20 6E 6F 74 20 62	65+
+    121	      20 72 65 61 64 24
+    122	00EF  45 72 72 6F 72 3A	20+	     ERR_FORMAT		     DB	     'Error: Invalid input format$'
+    123	      49 6E 76 61 6C 69	64+
+    124	      20 69 6E 70 75 74	20+
+    125	      66 6F 72 6D 61 74	24
+    126	010B  45 72 72 6F 72 3A	20+	     ERR_NOT_SOLVED  DB	     'Error: The sudoku	could not be solved. Invalid input$'
+    127	      54 68 65 20 73 75	64+
+    128	      6F 6B 75 20 63 6F	75+
+    129	      6C 64 20 6E 6F 74	20+
+    130	      62 65 20 73 6F 6C	76+
+    131	      65 64 2E 20 49 6E	76+
+    132	      61 6C 69 64 20 69	6E+
+    133	      70 75 74 24
+    134	0140			     DATA ENDS
+    135
+    136	0000			     STACK1 SEGMENT PARA STACK 'STACK'
+    137	0000  0100*(????)		     DW	256 DUP(?)
+    138	0200			     STACK1 ENDS
+    139
+    140	0000			     CODE SEGMENT PARA PUBLIC 'CODE'
+    141	0000				     START PROC	FAR
+    142						     ASSUME CS:CODE,DS:DATA,SS:STACK1
+    143
+    144	0000  1E				     PUSH DS
+    145	0001  33 C0				     XOR AX,AX
+    146	0003  50				     PUSH AX
+    147	0004  B8 0000s				     MOV AX,DATA
+    148	0007  8E D8				     MOV DS,AX
+    149
+    150	0009  BA 0067r				     LEA DX,PATH
+    151	000C  BB 0001r				     LEA BX,MAP
+    152	000F  9A 00000000se			     CALL READ
+    153
+    154	0014  83 FA 00				     CMP     DX,0
+    155	0017  74 5B				     JE	NEXT
+    156						     PERROR DX
+1   157	0019  83 FA 00			     CMP DX,ESUCC
+1   158	001C  74 1D			     JE	??0000
+1   159	001E  83 FA 01			     CMP DX,EFOPEN
+1   160	0021  74 26			     JE	     ??0001
+1   161	0023  83 FA 02			     CMP     DX,EFREAD
+1   162	0026  74 2F			     JE	     ??0002
+1   163	0028  83 FA 03			     CMP DX,EFORMAT
+1   164	002B  74 38			     JE	     ??0003
+1   165					     PSTRING ERR_UNEXP
+2   166	002D  52			     PUSH DX
+2   167	002E  50			     PUSH AX
+2   168	002F  BA 0091r			     LEA     DX,ERR_UNEXP
+2   169	0032  B4 09			     MOV     AH,09H
+2   170	0034  CD 21			     INT 21H
+2   171	0036  58			     POP AX
+Turbo Assembler	 Version 3.0	    05/23/19 17:48:50	    Page 4
+sudoku.ASM
+
+
+
+2   172	0037  5A			     POP DX
+1   173	0038  EB 39 90			     JMP ??0004
+1   174	003B				     ??0000:
+1   175						     PSTRING ERR_SUCC
+2   176	003B  52			     PUSH DX
+2   177	003C  50			     PUSH AX
+2   178	003D  BA 0081r			     LEA     DX,ERR_SUCC
+2   179	0040  B4 09			     MOV     AH,09H
+2   180	0042  CD 21			     INT 21H
+2   181	0044  58			     POP AX
+2   182	0045  5A			     POP DX
+1   183	0046  EB 2B 90				     JMP ??0004
+1   184	0049				     ??0001:
+1   185						     PSTRING ERR_FOPEN
+2   186	0049  52			     PUSH DX
+2   187	004A  50			     PUSH AX
+2   188	004B  BA 00A9r			     LEA     DX,ERR_FOPEN
+2   189	004E  B4 09			     MOV     AH,09H
+2   190	0050  CD 21			     INT 21H
+2   191	0052  58			     POP AX
+2   192	0053  5A			     POP DX
+1   193	0054  EB 1D 90				     JMP ??0004
+1   194	0057				     ??0002:
+1   195						     PSTRING ERR_FREAD
+2   196	0057  52			     PUSH DX
+2   197	0058  50			     PUSH AX
+2   198	0059  BA 00CDr			     LEA     DX,ERR_FREAD
+2   199	005C  B4 09			     MOV     AH,09H
+2   200	005E  CD 21			     INT 21H
+2   201	0060  58			     POP AX
+2   202	0061  5A			     POP DX
+1   203	0062  EB 0F 90				     JMP ??0004
+1   204	0065				     ??0003:
+1   205						     PSTRING ERR_FORMAT
+2   206	0065  52			     PUSH DX
+2   207	0066  50			     PUSH AX
+2   208	0067  BA 00EFr			     LEA     DX,ERR_FORMAT
+2   209	006A  B4 09			     MOV     AH,09H
+2   210	006C  CD 21			     INT 21H
+2   211	006E  58			     POP AX
+2   212	006F  5A			     POP DX
+1   213	0070  EB 01 90				     JMP     ??0004
+1   214	0073				     ??0004:
+    215	0073  CB				     RET
+    216	0074					     NEXT:
+    217
+    218	0074  BA 0001r				     LEA DX,MAP
+    219	0077  9A 00000000se			     CALL VALIDATE
+    220	007C  3D 0000				     CMP     AX,0
+    221	007F  74 5B				     JE	NEXT2
+    222						     PERROR AX
+1   223	0081  3D 0000			     CMP AX,ESUCC
+1   224	0084  74 1D			     JE	??0005
+1   225	0086  3D 0001			     CMP AX,EFOPEN
+1   226	0089  74 26			     JE	     ??0006
+1   227	008B  3D 0002			     CMP     AX,EFREAD
+1   228	008E  74 2F			     JE	     ??0007
+Turbo Assembler	 Version 3.0	    05/23/19 17:48:50	    Page 5
+sudoku.ASM
+
+
+
+1   229	0090  3D 0003			     CMP AX,EFORMAT
+1   230	0093  74 38			     JE	     ??0008
+1   231					     PSTRING ERR_UNEXP
+2   232	0095  52			     PUSH DX
+2   233	0096  50			     PUSH AX
+2   234	0097  BA 0091r			     LEA     DX,ERR_UNEXP
+2   235	009A  B4 09			     MOV     AH,09H
+2   236	009C  CD 21			     INT 21H
+2   237	009E  58			     POP AX
+2   238	009F  5A			     POP DX
+1   239	00A0  EB 39 90			     JMP ??0009
+1   240	00A3				     ??0005:
+1   241						     PSTRING ERR_SUCC
+2   242	00A3  52			     PUSH DX
+2   243	00A4  50			     PUSH AX
+2   244	00A5  BA 0081r			     LEA     DX,ERR_SUCC
+2   245	00A8  B4 09			     MOV     AH,09H
+2   246	00AA  CD 21			     INT 21H
+2   247	00AC  58			     POP AX
+2   248	00AD  5A			     POP DX
+1   249	00AE  EB 2B 90				     JMP ??0009
+1   250	00B1				     ??0006:
+1   251						     PSTRING ERR_FOPEN
+2   252	00B1  52			     PUSH DX
+2   253	00B2  50			     PUSH AX
+2   254	00B3  BA 00A9r			     LEA     DX,ERR_FOPEN
+2   255	00B6  B4 09			     MOV     AH,09H
+2   256	00B8  CD 21			     INT 21H
+2   257	00BA  58			     POP AX
+2   258	00BB  5A			     POP DX
+1   259	00BC  EB 1D 90				     JMP ??0009
+1   260	00BF				     ??0007:
+1   261						     PSTRING ERR_FREAD
+2   262	00BF  52			     PUSH DX
+2   263	00C0  50			     PUSH AX
+2   264	00C1  BA 00CDr			     LEA     DX,ERR_FREAD
+2   265	00C4  B4 09			     MOV     AH,09H
+2   266	00C6  CD 21			     INT 21H
+2   267	00C8  58			     POP AX
+2   268	00C9  5A			     POP DX
+1   269	00CA  EB 0F 90				     JMP ??0009
+1   270	00CD				     ??0008:
+1   271						     PSTRING ERR_FORMAT
+2   272	00CD  52			     PUSH DX
+2   273	00CE  50			     PUSH AX
+2   274	00CF  BA 00EFr			     LEA     DX,ERR_FORMAT
+2   275	00D2  B4 09			     MOV     AH,09H
+2   276	00D4  CD 21			     INT 21H
+2   277	00D6  58			     POP AX
+2   278	00D7  5A			     POP DX
+1   279	00D8  EB 01 90				     JMP     ??0009
+1   280	00DB				     ??0009:
+    281	00DB  CB				     RET
+    282	00DC					     NEXT2:
+    283
+    284
+    285						     ;PSTRING MAP
+Turbo Assembler	 Version 3.0	    05/23/19 17:48:50	    Page 6
+sudoku.ASM
+
+
+
+    286
+    287	00DC  BA 0001r				     LEA DX,MAP
+    288	00DF  9A 00000000se			     CALL SOLVE
+    289
+    290	00E4  3D 0000				     CMP AX,0
+    291	00E7  75 0B				     JNE FINISHED
+    292						     PSTRING ERR_NOT_SOLVED
+1   293	00E9  52			     PUSH DX
+1   294	00EA  50			     PUSH AX
+1   295	00EB  BA 010Br			     LEA     DX,ERR_NOT_SOLVED
+1   296	00EE  B4 09			     MOV     AH,09H
+1   297	00F0  CD 21			     INT 21H
+1   298	00F2  58			     POP AX
+1   299	00F3  5A			     POP DX
+    300						     ;RET
+    301	00F4					     FINISHED:
+    302						     PSTRING MAP
+1   303	00F4  52			     PUSH DX
+1   304	00F5  50			     PUSH AX
+1   305	00F6  BA 0001r			     LEA     DX,MAP
+1   306	00F9  B4 09			     MOV     AH,09H
+1   307	00FB  CD 21			     INT 21H
+1   308	00FD  58			     POP AX
+1   309	00FE  5A			     POP DX
+    310	00FF  CB				     RET
+    311	0100				     START ENDP
+    312	0100			     CODE ENDS
+    313
+    314				     END START
+Turbo Assembler	 Version 3.0	    05/23/19 17:48:50	    Page 7
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??0000				  Near	 CODE:003B
+??0001				  Near	 CODE:0049
+??0002				  Near	 CODE:0057
+??0003				  Near	 CODE:0065
+??0004				  Near	 CODE:0073
+??0005				  Near	 CODE:00A3
+??0006				  Near	 CODE:00B1
+??0007				  Near	 CODE:00BF
+??0008				  Near	 CODE:00CD
+??0009				  Near	 CODE:00DB
+??DATE				  Text	 "05/23/19"
+??FILENAME			  Text	 "sudoku  "
+??TIME				  Text	 "17:48:50"
+??VERSION			  Number 0300
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 SUDOKU
+@WORDSIZE			  Text	 2
+EFOPEN				  Number 0001
+EFORMAT				  Number 0003
+EFREAD				  Number 0002
+ERR_FOPEN			  Byte	 DATA:00A9
+ERR_FORMAT			  Byte	 DATA:00EF
+ERR_FREAD			  Byte	 DATA:00CD
+ERR_NOT_SOLVED			  Byte	 DATA:010B
+ERR_SUCC			  Byte	 DATA:0081
+ERR_UNEXP			  Byte	 DATA:0091
+ESUCC				  Number 0000
+FINISHED			  Near	 CODE:00F4
+MAP				  Byte	 DATA:0001
+MSIZE				  Number 0061
+NEXT				  Near	 CODE:0074
+NEXT2				  Near	 CODE:00DC
+PATH				  Byte	 DATA:0067
+PMAP				  Dword	 DATA:0063
+READ				  Far	 ----:---- Extern
+SOLVE				  Far	 ----:---- Extern
+START				  Far	 CODE:0000
+T				  Byte	 DATA:0000
+VALIDATE			  Far	 ----:---- Extern
+
+Macro Name
+
+FCLOSE
+FOPEN
+FREAD
+PCHAR
+PERROR
+PSTRING
+Turbo Assembler	 Version 3.0	    05/23/19 17:48:50	    Page 8
+Symbol Table
+
+
+
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0100 Para	  Public  CODE
+DATA				  16  0140 Para	  Public  DATA
+STACK1				  16  0200 Para	  Stack	  STACK
+Turbo Assembler	 Version 3.0	    05/23/19 17:48:50	    Page 9
+Error Summary
+
+
+
+*Warning* sudoku.ASM(7)	Pass-dependent construction encountered
+
