@@ -2,7 +2,6 @@ COMMENT *Procedures for solving the sudoku*
 
 IF1
 	INCLUDE C:\TASM\sudoku\sud_ct.mac
-	INCLUDE C:\TASM\sudoku\sud_io.mac
 ENDIF
 
 BOX_START MACRO POS

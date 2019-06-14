@@ -11,7 +11,6 @@ IF1
 ENDIF
 
 DATA SEGMENT PARA PUBLIC 'DATA'
-	T		DB	12
 	MAP 	DB	MSIZE DUP('_'),'$'
 	PMAP 	DD	MAP
 	PATH	DB	'C:\TASM\sudoku\sudoku.txt',0
