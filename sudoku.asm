@@ -3,11 +3,11 @@ COMMENT	*SUDOKU SOLVER*
 EXTRN	READ:FAR
 EXTRN 	SOLVE:FAR
 EXTRN	VALIDATE:FAR
+EXTRN	PERROR:FAR
 
 IF1
 	INCLUDE C:\TASM\sudoku\sud_ct.mac
 	INCLUDE C:\TASM\sudoku\sud_io.mac
-	INCLUDE C:\TASM\sudoku\sud_err.mac
 ENDIF
 
 DATA SEGMENT PARA PUBLIC 'DATA'
@@ -15,14 +15,6 @@ DATA SEGMENT PARA PUBLIC 'DATA'
 	MAP 	DB	MSIZE DUP('_'),'$'
 	PMAP 	DD	MAP
 	PATH	DB	'C:\TASM\sudoku\sudoku.txt',0
-	
-	;Error messages
-	ERR_SUCC		DB	'Error: No error$'
-	ERR_UNEXP		DB	'Error: Unexpected error$'
-	ERR_FOPEN		DB	'Error: The file could not be opened$'
-	ERR_FREAD		DB	'Error: The file could not be read$'
-	ERR_FORMAT		DB	'Error: Invalid input format$'
-	ERR_NOT_SOLVED	DB	'Error: The sudoku could not be solved. Invalid input$'
 DATA ENDS
 
 STACK1 SEGMENT PARA STACK 'STACK'
@@ -43,32 +35,29 @@ CODE SEGMENT PARA PUBLIC 'CODE'
 		LEA BX,MAP
 		CALL READ	
 
-		CMP	DX,0
-		JE NEXT
-		PERROR DX
-		RET
-		NEXT:
+		MOV AX,DX
+		CMP	AX,0
+		JNE PERR
 		
 		LEA DX,MAP
 		CALL VALIDATE
 		CMP	AX,0
-		JE NEXT2
-		PERROR AX
-		RET
-		NEXT2:
-		
-		
-		;PSTRING MAP
-		
+		JNE PERR
+
 		LEA DX,MAP
 		CALL SOLVE
 		
 		CMP AX,0
 		JNE FINISHED
-		PSTRING ERR_NOT_SOLVED
-		;RET
+		MOV AX,ENOSOL
+		JMP PERR
+		
 		FINISHED:
 		PSTRING MAP
+		RET
+		
+		PERR:
+		CALL PERROR
 		RET
 	START ENDP
 CODE ENDS
