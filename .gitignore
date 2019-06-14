@@ -1,3 +1,9 @@
 *.EXE
 *.OBJ
 *.LST
+*.obj
+*.lst
+*.map
+*.exe
+*.OBJ
+*.MAP
