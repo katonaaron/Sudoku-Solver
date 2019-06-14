@@ -1,4 +1,5 @@
-COMMENT *PRINTS ERROR MESSAGES*
+TITLE Sudoku Solver - Errors
+COMMENT *Contains a procedure for printing error messages*
 
 IF1
 	INCLUDE C:\TASM\sudoku\sud_ct.mac	
@@ -20,21 +21,21 @@ ERR_CODE SEGMENT PARA PUBLIC 'CODE'
 	
 	PUBLIC	PERROR
 	
-	;PRINTS AN ERROR MESSAGE FOR THE GIVEN ERROR CODE
-	;INPUT: AX - ERROR CODE, DEFINED IN "sud_ct.mac"
-	;OUTPUT: -
+	;Prints an error message for the given error code.
+	;Input: AX = error code, defined in "sud_ct.mac"
+	;Output: none
 	PERROR PROC FAR
-		PUSH DS
+		PUSH DS					;Backup the registers that are used
 		PUSH AX
 		
-		PUSH AX
-		MOV AX,ERR_DATA
-		MOV DS,AX
-		POP AX
+		PUSH AX					;Backup AX
+		MOV AX,ERR_DATA			;Changes the data segment 
+		MOV DS,AX				;to ERR_DATA
+		POP AX					;Restore AX
 	
-		CMP AX,ESUCC
-		JE SUCCESS
-		
+		CMP AX,ESUCC			;AX is compared to each error code
+		JE SUCCESS				;If it matches an error code, it jumps to the line
+								;where the corresponding error message is printed
 		CMP AX,EFOPEN
 		JE	E_FOPEN
 		
@@ -47,10 +48,10 @@ ERR_CODE SEGMENT PARA PUBLIC 'CODE'
 		CMP AX,ENOSOL
 		JE	NO_SOL
 		
-		PSTRING	ERR_UNEXP
-		JMP FINALLY
+		PSTRING	ERR_UNEXP		;The error code doesn't match the ones from "sud_ct.mac"
+		JMP FINALLY				;Prints the "unexpected error" message and jumps to the last instructions
 		
-		SUCCESS:
+		SUCCESS:				;The error message is printed, then a jump is made to the last instructions
 			PSTRING ERR_SUCC
 			JMP FINALLY
 		E_FOPEN:
@@ -66,8 +67,8 @@ ERR_CODE SEGMENT PARA PUBLIC 'CODE'
 			PSTRING ERR_NOT_SOLVED
 			JMP FINALLY
 		
-		FINALLY:
-		POP AX
+		FINALLY: 				;The registers are restored, and 
+		POP AX					;the program returns
 		POP DS
 		RET
 	PERROR ENDP
