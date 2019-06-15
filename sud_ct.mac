@@ -1,5 +1,5 @@
 TITLE Sudoku Solver - Constants
-COMMENT *Contains the constants that are used in the program*
+COMMENT *Constants that are used in the program*
 
 ;Error codes:
 ESUCC	EQU	0				;No error.
