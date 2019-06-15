@@ -24,7 +24,7 @@ VAL_CODE SEGMENT PARA PUBLIC 'CODE'
 		
 		L1:									;L1 modifies SI on each run
 			MOV BX,0						;Points to the first element on the line
-			L2:								;L2 modifiess BX on each run
+			L2:								;L2 modifies BX on each run
 				CMP BX,NR_DCOL				;If BX is in the interval [0, NR_DCOL], the corresponding charachter
 				JB VAL_NUM					;should be a digit in the interval [0, 9], otherwise we check for CRLF.
 				
