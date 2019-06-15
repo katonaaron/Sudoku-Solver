@@ -2,13 +2,15 @@ TITLE Sudoku Solver - Constants
 COMMENT *Contains the constants that are used in the program*
 
 ;Error codes:
-ESUCC	EQU	0		;No error.
-EFOPEN	EQU	1		;The file could not be opened. The 3Dh DOS function failed.
-EFREAD	EQU	2		;The file could not be read. The 3FH DOS function failed.
-EFORMAT	EQU	3		;The input has an invalid format: must contain only digits [0,9]
-					;and all 9 line must have 9 digits and must end in CRLF
-ENOSOL	EQU	4		;The sudoku could not be solved. The input data has duplicate
-					;values in a line, column or box
+ESUCC	EQU	0				;No error.
+EFOPEN	EQU	1				;The file could not be opened. The 3Dh DOS function failed.
+EFREAD	EQU	2				;The file could not be read. The 3FH DOS function failed.
+EFORMAT	EQU	3				;The input has an invalid format: must contain only digits [0,9]
+							;and all 9 line must have 9 digits and must end in CRLF
+ENOSOL	EQU	4				;The sudoku could not be solved. The input data has duplicate
+							;values in a line, column or box
 
-;Size of the map:
-MSIZE	EQU	99		;9x9 digits + 9x2 byte: CRLF at the end of each line
+;Size constants:
+NR_ROW	EQU	9				;9 rows
+NR_COL	EQU (9 + 2)			;9 columns + 2 for CRLF
+MSIZE	EQU	NR_ROW * NR_COL	;The size of the memory location containing the sudoku grid
