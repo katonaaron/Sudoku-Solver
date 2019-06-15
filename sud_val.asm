@@ -1,4 +1,5 @@
-COMMENT *VALIDATES THE INPUT SUDOKU MAP*
+TITLE Sudoku Solver - Validation
+COMMENT *Contains a procedure for validating the input*
 
 IF1
 	INCLUDE C:\TASM\sudoku\sud_ct.mac
@@ -9,51 +10,52 @@ VAL_CODE SEGMENT PARA PUBLIC 'CODE'
 	
 	PUBLIC	VALIDATE
 	
-	;VALIDATES THE INPUT
-	;INPUT: DS:DX - THE MAP THAT WAS READ
-	;OUTPUT: AX - 0 IF VALID, EFORMAT IF INVALID
+	;Validates the given memory location. The valid format is: 9 digits in the interval [0,9] + CRLF on each of the 9 lines
+	;Input: DS:DX = Address of the memory location which should be validated.
+	;				Its size is MSIZE, defined in "sud_ct.mac".
+	;Output: AX = ESUCC if valid, AX = EFORMAT if invalid
 	VALIDATE PROC FAR
-		PUSH SI
+		PUSH SI								;Backup the registers that are used
 		PUSH BX
 		
-		MOV SI,DX
-		MOV AX,DX
-		ADD AX,88
+		MOV SI,DX							;Move to SI the starting address
+		MOV AX,DX							;AX will store the terminating adress of SI
+		ADD AX,MSIZE						;AX = starting address + size of the memory location (MSIZE)
 		
-		L1:
-			MOV BX,0
-			L2:
-				CMP BX,9
-				JB VAL_NUM
+		L1:									;L1 modifies SI on each run
+			MOV BX,0						;Points to the first element on the line
+			L2:								;L2 modifiess BX on each run
+				CMP BX,NR_DCOL				;If BX is in the interval [0, NR_DCOL], the corresponding charachter
+				JB VAL_NUM					;should be a digit in the interval [0, 9], otherwise we check for CRLF.
 				
-				;VALIDATE CRLF
-				CMP WORD PTR [SI][BX],0A0DH
-				JNE INVALID
-				JMP L2_CONT
+				;Validate CRLF				;We reached the end of the line, so we check if it ends in CRLF
+				CMP WORD PTR [SI][BX],0A0DH	;Compare the last two bytes to CRLF
+				JNE INVALID					;Return an error if it is not equal
+				JMP L2_CONT					;Continue the loop otherwise
 				
-				VAL_NUM:
-				CMP BYTE PTR [SI][BX],'0'
+				VAL_NUM:					;We validate the charachter to be a digit in the interval [0,9].
+				CMP BYTE PTR [SI][BX],'0'	;If it's < '0' we return an error
 				JB	INVALID
-				CMP BYTE PTR [SI][BX],'9'
+				CMP BYTE PTR [SI][BX],'9'	;If it's > '9' we return an error
 				JA	INVALID
 				
 				L2_CONT:
-				INC BX
-				CMP BX,9
-				JBE	L2
+				INC BX						;BX is incremented
+				CMP BX,NR_DCOL				;If it reached the last column which contains digit, 
+				JBE	L2						;it loops one more time to check CRLF
 			
-			ADD SI,11
-			CMP SI,AX
-			JBE L1
+			ADD SI,NR_COL					;SI was incremented by the number of columns
+			CMP SI,AX						;If it reached the terminating address, exits the loop
+			JB 	L1
 			
-		MOV AX,ESUCC
+		MOV AX,ESUCC						;The format is valid. Return success.
 		JMP RETURN
 		
 		INVALID:
-		MOV AX,EFORMAT
+		MOV AX,EFORMAT						;There was an invalid charachter. Return the error code.
 			
 		RETURN:
-		POP BX
+		POP BX								;Restore the registers
 		POP SI
 		RET
 	VALIDATE ENDP
