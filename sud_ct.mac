@@ -11,4 +11,4 @@ ENOSOL	EQU	4		;The sudoku could not be solved. The input data has duplicate
 					;values in a line, column or box
 
 ;Size of the map:
-MSIZE	EQU	99		;9x9 digits + 9*2 byte CRLF
+MSIZE	EQU	99		;9x9 digits + 9x2 byte: CRLF at the end of each line
