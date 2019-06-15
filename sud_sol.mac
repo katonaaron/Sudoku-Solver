@@ -1,0 +1,59 @@
+TITLE Sudoku Solver - Solution - Macros
+COMMENT *Macros that are needed for calculating the solution*
+
+;Calculates the starting position of the cointaing box for a given row number or column number;
+;Starting position of the box: curent_position - (curent_position % 3)
+;Input: DS:DX = The address to the memory location where the sudoku grid is stored.
+;				Its size is MSIZE, defined in "sud_ct.mac"
+;		POS = number of the given row/column
+;Output: AX = POS - (POS % 3)
+BOX_START MACRO POS
+	PUSH DX			;Backup the registers that are used
+	PUSH CX
+	
+	MOV DX,0		;Set it to 0 before division
+	MOV AX,POS		;Copies the position
+	MOV CX,3		
+	DIV CX			;Divides the position by 3
+	
+	MOV AX,POS		;Substract from the original position 
+	SUB AX,DX		;the remainder from  the previous division 
+	
+	POP CX			;Restore the registers
+	POP DX
+ENDM
+
+;Calculates for the given row, its number. (eg. 0. row, 1. row, ...) 
+;Input: DS:DX = The address to the memory location where the sudoku grid is stored.
+;				Its size is MSIZE, defined in "sud_ct.mac"
+;		ROW = pointer to a given row
+;Output: AX = number of the row
+ROW_NUM MACRO ROW
+	PUSH BX			;Backup the registers that are used
+	PUSH DX
+	
+	MOV AX,ROW		;Copies the address
+	SUB AX,DX		;Substracts from it the starting address. AX will be the offset from DX.
+	MOV DX,0		;Set it to 0 before division
+	MOV BX,NR_COL	
+	DIV BX			;Divides the offset by the number of columns, so AX will be the number of the row.
+	
+	POP DX			;Restore the registers
+	POP BX
+ENDM
+
+;Calculates for the given row number (eg. 0. row, 1. row, ...) the pointer to the row
+;Input: DS:DX = The address to the memory location where the sudoku grid is stored.
+;				Its size is MSIZE, defined in "sud_ct.mac"
+;		ROW = number of the given row
+;Output: AX = pointer to the row
+ROW_ADDR MACRO ROW
+	PUSH BX			;Backup BX
+	
+	MOV AX,ROW		;Copies the number of the row
+	MOV BL,NR_COL	
+	MUL BL			;Multiplies it with the number of columns
+	ADD AX,DX		;Adds to it the startig address
+	
+	POP BX			;Restore BX
+ENDM
