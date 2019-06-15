@@ -12,5 +12,6 @@ ENOSOL	EQU	4				;The sudoku could not be solved. The input data has duplicate
 
 ;Size constants:
 NR_ROW	EQU	9				;9 rows
-NR_COL	EQU (9 + 2)			;9 columns + 2 for CRLF
+NR_DCOL	EQU	9				;9 columns are for the digits
+NR_COL	EQU NR_DCOL + 2		;9 columns for the digits + 2 for CRLF
 MSIZE	EQU	NR_ROW * NR_COL	;The size of the memory location containing the sudoku grid
