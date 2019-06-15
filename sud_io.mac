@@ -1,43 +1,52 @@
+TITLE Sudoku Solver - Input/Output Macros
+COMMENT *Macros for reading from a file and for printing to the console*
+
+;Opens the file for the given path and returns a file handle to it
+;Input: DS:DX = Address of the path to the input file. The path is a string terminated in 0.
+;Output: CF = 0 on success, CF = 1 on error
+;		 AX = File handle on success, AX = DOS error code on error
 FOPEN MACRO
 	MOV AH,3DH
-	MOV AL,0H
+	MOV AL,0H		;Open the file for read only access
 	INT 21H
 ENDM
- 
+
+;Reads the request number of bytes from a file to the given memory location
+;Input: DS:DX = Address of the memory location where the read data will be stored.
+;		BX = File handle, returned from FOPEN
+;		NR_BYTES = The number of bytes to read. It must be on 16-bits.
+;Output: CF = 0 on success, CF = 1 on error
+;		 AX = Actual number of bytes read on success, AX = DOS error code on error
 FREAD MACRO NR_BYTES
-	PUSH CX
+	PUSH CX			;Backup CX
 	MOV AH,3FH
 	MOV CX,NR_BYTES
 	INT 21H
-	POP CX
+	POP CX			;Restore CX
 ENDM
  
+;Closes a file
+;Input: BX = File handle, returned from FOPEN
+;Output: CF = 0 on success, CF = 1 on error
 FCLOSE MACRO
+	PUSH AX			;Backup AX
 	MOV	AH,3EH
 	INT 21H
+	POP AX			;Restore AX
 ENDM
 
+;Prints a string to the console
+;Input: MSG = Pointer to a '$'-terminated string in the current data segment.
+;Output: none
 PSTRING MACRO MSG
-	PUSH DX
+	PUSH DX			;Backup the registers
 	PUSH AX
 	
-	LEA	DX,MSG
+	LEA	DX,MSG		;Load the address of the string
 	MOV	AH,09H
 	INT 21H
 	
-	POP AX
-	POP DX
-ENDM
-
-PCHAR MACRO CHAR
-	PUSH DX
-	PUSH AX
-	
-	MOV DL,CHAR
-	MOV AH,02H
-	INT 21H
-	
-	POP AX
+	POP AX			;Restore the registers
 	POP DX
 ENDM
 	
