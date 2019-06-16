@@ -2,7 +2,7 @@ TITLE Sudoku Solver - Main
 COMMENT	*The main program of the sudoku solver. Calls the procedures from the other modules*
 
 ;External procedures
-EXTRN	READ:FAR		;sud_io.asm
+EXTRN	READ:FAR		;sud_in.asm
 EXTRN 	SOLVE:FAR		;sud_sol.asm
 EXTRN	VALIDATE:FAR	;sud_val.asm
 EXTRN	PERROR:FAR		;sud_err.asm
